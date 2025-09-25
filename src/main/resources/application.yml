@@ -1,3 +1,11 @@
 spring:
   application:
     name: user-service
+  config:
+    import[0]: nacos:springboot3x.properties?group=DEFAULT_GROUP
+    server-addr: 127.0.0.1:8848
+    file-extension: properties   # YAML 也可以，但需要 @ConfigurationProperties
+    group: config
+    name: routeconfig
+plainKey:
+  localXyz
