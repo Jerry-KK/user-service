@@ -4,6 +4,11 @@ server:
 spring:
   application:
     name: user-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/dms_user_db?useSSL=false&serverTimezone=UTC
+    username: root
+    password: admin
+    driver-class-name: com.mysql.cj.jdbc.Driver
   cloud:
     nacos:
       server-addr: 192.168.1.4:8848,192.168.1.4:8850,192.168.1.4:8852
@@ -22,3 +27,9 @@ spring:
   config:
     import:
       - nacos:user-service.yml?group=dms-practice&namespace=public
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 打印 SQL 日志
+#  global-config:
+#    db-config:
+#      id-type: auto  # 自增主键
