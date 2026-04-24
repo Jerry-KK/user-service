@@ -1,15 +1,24 @@
+server:
+  servlet:
+    context-path: /user  # 服务自身前缀
 spring:
   application:
     name: user-service
   cloud:
     nacos:
+      server-addr: 192.168.1.4:8848,192.168.1.4:8850,192.168.1.4:8852
+      username: 'nacos'
+      password: 'nacos'
       discovery:
-        server-addr: 127.0.0.1:8848
+        group: dms-practice
+  #      config:
+#        group: dms-practice
+#        namespace: public
+#        prefix: user-service
+#        file-extension: yml
+    loadbalancer:
+      nacos:
+        enabled: true
   config:
-    import[0]: nacos:springboot3x.properties?group=DEFAULT_GROUP
-    server-addr: 127.0.0.1:8848
-    file-extension: properties   # YAML 也可以，但需要 @ConfigurationProperties
-    group: config
-    name: routeconfig
-plainKey:
-  localXyz
+    import:
+      - nacos:user-service.yml?group=dms-practice&namespace=public
