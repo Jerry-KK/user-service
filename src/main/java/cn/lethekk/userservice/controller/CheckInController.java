@@ -31,7 +31,7 @@ public class CheckInController {
 
         //发送MQ
         //异步提交累加积分任务,即积分有个总计，有个记录表
-        return service.checkIn(userId);
+        return service.checkIn(userId , LocalDateTime.now());
     }
 
 
@@ -39,7 +39,7 @@ public class CheckInController {
     //查看今日是否签到
     @GetMapping("/isCheckIn")
     public boolean isCheckIn(Long userId) {
-        return service.isCheckIn(userId);
+        return service.isCheckIn(userId, LocalDate.now());
     }
 
 

@@ -4,11 +4,10 @@ import cn.lethekk.userservice.entity.CheckInDaysEntity;
 import cn.lethekk.userservice.entity.CheckInLogEntity;
 import cn.lethekk.userservice.entity.PointsLogEntity;
 import cn.lethekk.userservice.entity.UserTotalPointsEntity;
+import cn.lethekk.userservice.manage.CheckInTableShardingManager;
 import cn.lethekk.userservice.repository.checkin.CheckInDaysMapper;
-import cn.lethekk.userservice.repository.checkin.CheckInLogMapper;
 import cn.lethekk.userservice.repository.checkin.PointsLogMapper;
 import cn.lethekk.userservice.repository.checkin.UserTotalPointsMapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import lombok.AllArgsConstructor;
@@ -31,40 +30,34 @@ import java.util.List;
 @Slf4j
 public class CheckInService {
 
-    private final CheckInLogMapper checkInLogMapper;
     private final UserTotalPointsMapper userTotalPointsMapper;
     private final PointsLogMapper pointsLogMapper;
     private final CheckInDaysMapper checkInDaysMapper;
 
+    private final CheckInTableShardingManager manager;
+
     @Transactional(rollbackFor = Exception.class)
-    public boolean checkIn(Long userId) {
-        LocalDateTime ldt = LocalDateTime.now().minusDays(1);
+    public boolean checkIn(Long userId, LocalDateTime ldt) {
         CheckInLogEntity e = CheckInLogEntity.builder()
                 .id(IdWorker.getId())
                 .userId(userId)
                 .date(ldt.toLocalDate())
                 .time(ldt)
                 .build();
-        int insert = checkInLogMapper.insertIgnore(e);
+        int insert = manager.insertCheckInLog(e);
         if (insert == 1) {
             addPoints(userId, ldt);
         }
         return insert == 1;
     }
 
-    public boolean isCheckIn(Long userId) {
-        QueryWrapper<CheckInLogEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("user_id", userId)
-                .eq("date", LocalDate.now());
-        CheckInLogEntity e = checkInLogMapper.selectOne(queryWrapper);
+    public boolean isCheckIn(Long userId, LocalDate date) {
+        CheckInLogEntity e = manager.selectLog(userId, date);
         return e != null && e.getId() != null;
     }
 
     public List<CheckInLogEntity> queryRange(Long userId, LocalDate start, LocalDate end) {
-        QueryWrapper<CheckInLogEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("user_id", userId)
-                .between("date", start, end);
-        return checkInLogMapper.selectList(queryWrapper);
+        return manager.queryRange(userId, start, end);
     }
 
     public int queryPoints(Long userId) {

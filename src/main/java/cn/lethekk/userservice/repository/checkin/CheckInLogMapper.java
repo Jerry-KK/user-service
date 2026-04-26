@@ -3,6 +3,10 @@ package cn.lethekk.userservice.repository.checkin;
 import cn.lethekk.userservice.entity.CheckInLogEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Param;
+
+import java.time.LocalDate;
+import java.util.List;
 
 /**
  * @Author Lethekk
@@ -12,5 +16,11 @@ public interface CheckInLogMapper extends BaseMapper<CheckInLogEntity> {
 
     @Insert("INSERT IGNORE INTO `check_in_log` (id, user_id, date,time) VALUES (#{id}, #{userId}, #{date}, #{time})")
     int insertIgnore(CheckInLogEntity e);
+
+    int insertMonthTable(@Param("e") CheckInLogEntity e, @Param("tableSuf") String tableSuf);
+
+    CheckInLogEntity selectLog(@Param("userId") Long userId, @Param("date") LocalDate date, @Param("tableSuf") String tableSuf);
+
+    List<CheckInLogEntity> selectMonthLog(@Param("userId") Long userId, @Param("start") LocalDate start, @Param("end") LocalDate end, @Param("tableSuf") String tableSuf);
 
 }
