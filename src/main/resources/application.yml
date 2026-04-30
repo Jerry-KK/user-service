@@ -5,10 +5,8 @@ spring:
   application:
     name: user-service
   datasource:
-    url: jdbc:mysql://localhost:3306/dms_user_db?useSSL=false&serverTimezone=UTC
-    username: root
-    password: admin
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    driver-class-name: org.apache.shardingsphere.driver.ShardingSphereDriver
+    url: jdbc:shardingsphere:classpath:shardingsphere.yml
   cloud:
     nacos:
       server-addr: 192.168.1.4:8848,192.168.1.4:8850,192.168.1.4:8852

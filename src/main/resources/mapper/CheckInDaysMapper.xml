@@ -4,22 +4,15 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.lethekk.userservice.repository.checkin.CheckInLogMapper">
 
-    <insert id="insertMonthTable">
-        insert ignore into  check_in_log_${tableSuf}
-        (`id`, `user_id`, `date`, `time`)
-        values
-        (#{e.id}, #{e.userId}, #{e.date}, #{e.time})
-    </insert>
-
     <select id="selectLog">
         select `id`, `user_id`, `date`, `time`
-        from check_in_log_${tableSuf}
+        from check_in_log
         where user_id = #{userId} and date = #{date}
     </select>
 
     <select id="selectMonthLog">
         select `id`, `user_id`, `date`, `time`
-        from check_in_log_${tableSuf}
+        from check_in_log
         where user_id = #{userId} and date between #{start} and #{end}
         order by `date`
     </select>

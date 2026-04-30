@@ -17,10 +17,8 @@ public interface CheckInLogMapper extends BaseMapper<CheckInLogEntity> {
     @Insert("INSERT IGNORE INTO `check_in_log` (id, user_id, date,time) VALUES (#{id}, #{userId}, #{date}, #{time})")
     int insertIgnore(CheckInLogEntity e);
 
-    int insertMonthTable(@Param("e") CheckInLogEntity e, @Param("tableSuf") String tableSuf);
+    CheckInLogEntity selectLog(@Param("userId") Long userId, @Param("date") LocalDate date);
 
-    CheckInLogEntity selectLog(@Param("userId") Long userId, @Param("date") LocalDate date, @Param("tableSuf") String tableSuf);
-
-    List<CheckInLogEntity> selectMonthLog(@Param("userId") Long userId, @Param("start") LocalDate start, @Param("end") LocalDate end, @Param("tableSuf") String tableSuf);
+    List<CheckInLogEntity> selectMonthLog(@Param("userId") Long userId, @Param("start") LocalDate start, @Param("end") LocalDate end);
 
 }

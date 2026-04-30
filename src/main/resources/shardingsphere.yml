@@ -1,0 +1,31 @@
+dataSources:
+  ds0:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    jdbcUrl: jdbc:mysql://localhost:3306/dms_user_db?useUnicode=true&characterEncoding=utf8
+    username: root
+    password: admin
+
+rules:
+  - !SHARDING
+    tables:
+      check_in_log:
+        actualDataNodes: ds0.check_in_log_$->{202602..202612}
+        tableStrategy:
+          standard:
+            shardingColumn: date
+            shardingAlgorithmName: check_in_log_month_algo
+    shardingAlgorithms:
+      check_in_log_month_algo:
+        type: CLASS_BASED
+        props:
+          strategy: standard
+          algorithmClassName: cn.lethekk.userservice.config.sharding.CheckInMonthShardingAlgorithm
+
+  - !SINGLE
+    tables:
+      - "*.*"    # 加载所有未分片的表
+    defaultDataSource: ds0
+
+props:
+  sql-show: true

@@ -4,8 +4,8 @@ import cn.lethekk.userservice.entity.CheckInDaysEntity;
 import cn.lethekk.userservice.entity.CheckInLogEntity;
 import cn.lethekk.userservice.entity.PointsLogEntity;
 import cn.lethekk.userservice.entity.UserTotalPointsEntity;
-import cn.lethekk.userservice.manage.CheckInTableShardingManager;
 import cn.lethekk.userservice.repository.checkin.CheckInDaysMapper;
+import cn.lethekk.userservice.repository.checkin.CheckInLogMapper;
 import cn.lethekk.userservice.repository.checkin.PointsLogMapper;
 import cn.lethekk.userservice.repository.checkin.UserTotalPointsMapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -33,8 +33,7 @@ public class CheckInService {
     private final UserTotalPointsMapper userTotalPointsMapper;
     private final PointsLogMapper pointsLogMapper;
     private final CheckInDaysMapper checkInDaysMapper;
-
-    private final CheckInTableShardingManager manager;
+    private final CheckInLogMapper checkInLogMapper;
 
     @Transactional(rollbackFor = Exception.class)
     public boolean checkIn(Long userId, LocalDateTime ldt) {
@@ -44,7 +43,7 @@ public class CheckInService {
                 .date(ldt.toLocalDate())
                 .time(ldt)
                 .build();
-        int insert = manager.insertCheckInLog(e);
+        int insert = checkInLogMapper.insertIgnore(e);
         if (insert == 1) {
             addPoints(userId, ldt);
         }
@@ -52,12 +51,12 @@ public class CheckInService {
     }
 
     public boolean isCheckIn(Long userId, LocalDate date) {
-        CheckInLogEntity e = manager.selectLog(userId, date);
+        CheckInLogEntity e = checkInLogMapper.selectLog(userId, date);
         return e != null && e.getId() != null;
     }
 
     public List<CheckInLogEntity> queryRange(Long userId, LocalDate start, LocalDate end) {
-        return manager.queryRange(userId, start, end);
+        return checkInLogMapper.selectMonthLog(userId, start, end);
     }
 
     public int queryPoints(Long userId) {
