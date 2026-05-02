@@ -8,7 +8,6 @@ import cn.lethekk.userservice.repository.checkin.CheckInDaysMapper;
 import cn.lethekk.userservice.repository.checkin.CheckInLogMapper;
 import cn.lethekk.userservice.repository.checkin.PointsLogMapper;
 import cn.lethekk.userservice.repository.checkin.UserTotalPointsMapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -94,16 +93,8 @@ public class CheckInService {
         }
         //添加积分
         int addPoints = condition_7_days ? 101 : 1;
-        LambdaUpdateWrapper<UserTotalPointsEntity> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.eq(UserTotalPointsEntity::getUserId, userId)
-                .setSql("total_points = total_points + " + addPoints)
-                .set(UserTotalPointsEntity::getUpdateTime, ldt);
-        int update = userTotalPointsMapper.update(null, wrapper);
-        if (update == 0) {
-            UserTotalPointsEntity userTotalPoints = UserTotalPointsEntity.builder().userId(userId).totalPoints(addPoints).updateTime(ldt).build();
-            userTotalPointsMapper.insert(userTotalPoints);
-        }
-
+        UserTotalPointsEntity userTotalPoints = UserTotalPointsEntity.builder().userId(userId).totalPoints(addPoints).updateTime(ldt).build();
+        userTotalPointsMapper.insertOrUpdatePoint(userTotalPoints);
         //记录积分记录
         List<PointsLogEntity> list = new ArrayList<>();
         list.add(PointsLogEntity.builder().id(IdWorker.getId()).userId(userId).type(0).points(1).time(ldt).build());

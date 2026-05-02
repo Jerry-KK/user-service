@@ -9,4 +9,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface UserTotalPointsMapper extends BaseMapper<UserTotalPointsEntity> {
 
+    int insertOrUpdatePoint(UserTotalPointsEntity entity);
+
 }
