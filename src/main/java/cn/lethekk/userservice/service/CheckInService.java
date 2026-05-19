@@ -1,5 +1,7 @@
 package cn.lethekk.userservice.service;
 
+import cn.lethekk.userservice.config.RabbitMqConfig;
+import cn.lethekk.userservice.dto.AddPointsMessage;
 import cn.lethekk.userservice.entity.CheckInDaysEntity;
 import cn.lethekk.userservice.entity.CheckInLogEntity;
 import cn.lethekk.userservice.entity.PointsLogEntity;
@@ -11,6 +13,7 @@ import cn.lethekk.userservice.repository.checkin.UserTotalPointsMapper;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +36,7 @@ public class CheckInService {
     private final PointsLogMapper pointsLogMapper;
     private final CheckInDaysMapper checkInDaysMapper;
     private final CheckInLogMapper checkInLogMapper;
+    private final RabbitTemplate rabbitTemplate;
 
     @Transactional(rollbackFor = Exception.class)
     public boolean checkIn(Long userId, LocalDateTime ldt) {
@@ -44,7 +48,12 @@ public class CheckInService {
                 .build();
         int insert = checkInLogMapper.insertIgnore(e);
         if (insert == 1) {
-            addPoints(userId, ldt);
+            AddPointsMessage message = AddPointsMessage.builder()
+                    .userId(userId)
+                    .dateTime(ldt)
+                    .build();
+            rabbitTemplate.convertAndSend(RabbitMqConfig.POINTS_EXCHANGE, RabbitMqConfig.POINTS_ROUTING_KEY, message);
+            log.info("积分任务消息已发送: userId={}", userId);
         }
         return insert == 1;
     }
@@ -66,7 +75,7 @@ public class CheckInService {
         return e.getTotalPoints();
     }
 
-    private void addPoints(Long userId, LocalDateTime ldt) {
+    public void addPoints(Long userId, LocalDateTime ldt) {
         //处理连续天数
         CheckInDaysEntity checkInDays = checkInDaysMapper.selectById(userId);
         boolean condition_7_days = false;
@@ -102,7 +111,9 @@ public class CheckInService {
             list.add(PointsLogEntity.builder().id(IdWorker.getId()).userId(userId).type(1).points(100).time(ldt).build());
         }
         pointsLogMapper.insert(list);
+        log.info("积分已累加: userId={}, 增加{}分", userId, addPoints);
     }
 
 
 }
+

@@ -31,3 +31,9 @@ mybatis-plus:
 #  global-config:
 #    db-config:
 #      id-type: auto  # 自增主键
+rabbitmq:
+  host: localhost
+  port: 5672
+  username: guest
+  password: guest
+  virtual-host: /
