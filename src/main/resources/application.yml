@@ -25,15 +25,15 @@ spring:
   config:
     import:
       - nacos:user-service.yml?group=dms-practice&namespace=public
-mybatis-plus:
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 打印 SQL 日志
-#  global-config:
-#    db-config:
-#      id-type: auto  # 自增主键
   rabbitmq:
     host: localhost
     port: 5672
     username: guest
     password: guest
     virtual-host: /
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 打印 SQL 日志
+#  global-config:
+#    db-config:
+#      id-type: auto  # 自增主键
