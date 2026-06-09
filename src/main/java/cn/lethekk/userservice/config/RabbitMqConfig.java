@@ -18,13 +18,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMqConfig {
 
-    public static final String POINTS_EXCHANGE = "points.exchange";
+    public static final String EVENT_EXCHANGE = "event.exchange";
     public static final String POINTS_QUEUE = "points.queue";
-    public static final String POINTS_ROUTING_KEY = "points.add";
+    public static final String USER_CHECKIN_KEY = "user.checkin";
 
     @Bean
     public DirectExchange pointsExchange() {
-        return new DirectExchange(POINTS_EXCHANGE, true, false);
+        return new DirectExchange(EVENT_EXCHANGE, true, false);
     }
 
     @Bean
@@ -36,7 +36,7 @@ public class RabbitMqConfig {
     public Binding pointsBinding(Queue pointsQueue, DirectExchange pointsExchange) {
         return BindingBuilder.bind(pointsQueue)
                 .to(pointsExchange)
-                .with(POINTS_ROUTING_KEY);
+                .with(USER_CHECKIN_KEY);
     }
 
     @Bean

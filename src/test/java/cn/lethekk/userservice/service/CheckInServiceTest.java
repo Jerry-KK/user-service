@@ -1,7 +1,7 @@
 package cn.lethekk.userservice.service;
 
 import cn.lethekk.userservice.config.RabbitMqConfig;
-import cn.lethekk.userservice.dto.AddPointsMessage;
+import cn.lethekk.userservice.dto.CheckInMessage;
 import cn.lethekk.userservice.entity.CheckInDaysEntity;
 import cn.lethekk.userservice.entity.CheckInLogEntity;
 import cn.lethekk.userservice.entity.PointsLogEntity;
@@ -10,6 +10,7 @@ import cn.lethekk.userservice.repository.checkin.CheckInDaysMapper;
 import cn.lethekk.userservice.repository.checkin.CheckInLogMapper;
 import cn.lethekk.userservice.repository.checkin.PointsLogMapper;
 import cn.lethekk.userservice.repository.checkin.UserTotalPointsMapper;
+import cn.lethekk.userservice.repository.msg.MsgOutBoxMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -48,6 +49,8 @@ class CheckInServiceTest {
     private RabbitTemplate rabbitTemplate;
 
     private CheckInService checkInService;
+    @Mock
+    private MsgOutBoxMapper msgOutBoxMapper;
 
     @BeforeEach
     void setUp() {
@@ -56,7 +59,8 @@ class CheckInServiceTest {
                 pointsLogMapper,
                 checkInDaysMapper,
                 checkInLogMapper,
-                rabbitTemplate
+                rabbitTemplate,
+                msgOutBoxMapper
         );
     }
 
@@ -76,13 +80,13 @@ class CheckInServiceTest {
         // then
         assertThat(result).isTrue();
         // 验证发送了 MQ 消息
-        ArgumentCaptor<AddPointsMessage> msgCaptor = ArgumentCaptor.forClass(AddPointsMessage.class);
+        ArgumentCaptor<CheckInMessage> msgCaptor = ArgumentCaptor.forClass(CheckInMessage.class);
         verify(rabbitTemplate).convertAndSend(
-                eq(RabbitMqConfig.POINTS_EXCHANGE),
-                eq(RabbitMqConfig.POINTS_ROUTING_KEY),
+                eq(RabbitMqConfig.EVENT_EXCHANGE),
+                eq(RabbitMqConfig.USER_CHECKIN_KEY),
                 msgCaptor.capture()
         );
-        AddPointsMessage sentMsg = msgCaptor.getValue();
+        CheckInMessage sentMsg = msgCaptor.getValue();
         assertThat(sentMsg.getUserId()).isEqualTo(userId);
         assertThat(sentMsg.getDateTime()).isEqualTo(ldt);
     }

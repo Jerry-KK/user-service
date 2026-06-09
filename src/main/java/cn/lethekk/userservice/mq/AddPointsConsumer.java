@@ -1,7 +1,7 @@
 package cn.lethekk.userservice.mq;
 
 import cn.lethekk.userservice.config.RabbitMqConfig;
-import cn.lethekk.userservice.dto.AddPointsMessage;
+import cn.lethekk.userservice.dto.CheckInMessage;
 import cn.lethekk.userservice.service.CheckInService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +19,7 @@ public class AddPointsConsumer {
     private final CheckInService checkInService;
 
     @RabbitListener(queues = RabbitMqConfig.POINTS_QUEUE)
-    public void consume(AddPointsMessage message) {
+    public void consume(CheckInMessage message) {
         try {
             log.info("开始处理积分任务: userId={}", message.getUserId());
             checkInService.addPoints(message.getUserId(), message.getDateTime());

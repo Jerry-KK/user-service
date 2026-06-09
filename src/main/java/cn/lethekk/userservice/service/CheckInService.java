@@ -1,15 +1,14 @@
 package cn.lethekk.userservice.service;
 
 import cn.lethekk.userservice.config.RabbitMqConfig;
-import cn.lethekk.userservice.dto.AddPointsMessage;
-import cn.lethekk.userservice.entity.CheckInDaysEntity;
-import cn.lethekk.userservice.entity.CheckInLogEntity;
-import cn.lethekk.userservice.entity.PointsLogEntity;
-import cn.lethekk.userservice.entity.UserTotalPointsEntity;
+import cn.lethekk.userservice.dto.CheckInMessage;
+import cn.lethekk.userservice.entity.*;
 import cn.lethekk.userservice.repository.checkin.CheckInDaysMapper;
 import cn.lethekk.userservice.repository.checkin.CheckInLogMapper;
 import cn.lethekk.userservice.repository.checkin.PointsLogMapper;
 import cn.lethekk.userservice.repository.checkin.UserTotalPointsMapper;
+import cn.lethekk.userservice.repository.msg.MsgOutBoxMapper;
+import cn.lethekk.userservice.utils.JsonUtils;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,23 +36,34 @@ public class CheckInService {
     private final CheckInDaysMapper checkInDaysMapper;
     private final CheckInLogMapper checkInLogMapper;
     private final RabbitTemplate rabbitTemplate;
+    private final MsgOutBoxMapper msgOutBoxMapper;
 
     @Transactional(rollbackFor = Exception.class)
     public boolean checkIn(Long userId, LocalDateTime ldt) {
+        long id = IdWorker.getId();
         CheckInLogEntity e = CheckInLogEntity.builder()
-                .id(IdWorker.getId())
+                .id(id)
                 .userId(userId)
                 .date(ldt.toLocalDate())
                 .time(ldt)
                 .build();
         int insert = checkInLogMapper.insertIgnore(e);
         if (insert == 1) {
-            AddPointsMessage message = AddPointsMessage.builder()
+            CheckInMessage msg = CheckInMessage.builder()
+                    .id(id)
                     .userId(userId)
                     .dateTime(ldt)
                     .build();
-            rabbitTemplate.convertAndSend(RabbitMqConfig.POINTS_EXCHANGE, RabbitMqConfig.POINTS_ROUTING_KEY, message);
-            log.info("积分任务消息已发送: userId={}", userId);
+            String msgStr = JsonUtils.toJson(msg);
+            MsgOutBoxEntity msgOutBox = MsgOutBoxEntity.builder()
+                    .id(id)
+                    .label(RabbitMqConfig.USER_CHECKIN_KEY)
+                    .payload(msgStr)
+                    .state(0)
+                    .build();
+            msgOutBoxMapper.insert(msgOutBox);
+            /* rabbitTemplate.convertAndSend(RabbitMqConfig.EVENT_EXCHANGE, RabbitMqConfig.USER_CHECKIN_KEY, msg);
+            log.info("积分任务消息已发送: userId={}", userId); */
         }
         return insert == 1;
     }

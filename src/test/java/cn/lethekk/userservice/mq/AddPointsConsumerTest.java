@@ -1,6 +1,6 @@
 package cn.lethekk.userservice.mq;
 
-import cn.lethekk.userservice.dto.AddPointsMessage;
+import cn.lethekk.userservice.dto.CheckInMessage;
 import cn.lethekk.userservice.service.CheckInService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -37,7 +37,7 @@ class AddPointsConsumerTest {
         // given
         Long userId = 9001L;
         LocalDateTime ldt = LocalDateTime.of(2026, 5, 21, 10, 30, 0);
-        AddPointsMessage message = AddPointsMessage.builder()
+        CheckInMessage message = CheckInMessage.builder()
                 .userId(userId)
                 .dateTime(ldt)
                 .build();
@@ -56,7 +56,7 @@ class AddPointsConsumerTest {
         // given
         Long userId = 9002L;
         LocalDateTime ldt = LocalDateTime.of(2026, 5, 21, 11, 0, 0);
-        AddPointsMessage message = AddPointsMessage.builder()
+        CheckInMessage message = CheckInMessage.builder()
                 .userId(userId)
                 .dateTime(ldt)
                 .build();
@@ -77,7 +77,7 @@ class AddPointsConsumerTest {
         // given
         Long userId = 9003L;
         LocalDateTime ldt = LocalDateTime.of(2026, 5, 21, 12, 0, 0);
-        AddPointsMessage message = AddPointsMessage.builder()
+        CheckInMessage message = CheckInMessage.builder()
                 .userId(userId)
                 .dateTime(ldt)
                 .build();

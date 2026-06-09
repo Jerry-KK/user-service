@@ -9,15 +9,15 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 积分任务消息
+ * 用户签到消息
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddPointsMessage implements Serializable {
+public class CheckInMessage implements Serializable {
     private static final long serialVersionUID = 1L;
-
+    private Long id;
     private Long userId;
     private LocalDateTime dateTime;
 }
