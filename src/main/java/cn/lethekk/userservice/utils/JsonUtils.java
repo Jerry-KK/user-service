@@ -2,6 +2,7 @@ package cn.lethekk.userservice.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
  * @Author Lethekk
@@ -9,6 +10,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class JsonUtils {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    static {
+        OBJECT_MAPPER.registerModule(new JavaTimeModule());
+    }
 
     private JsonUtils() {}
 
