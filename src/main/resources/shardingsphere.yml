@@ -4,14 +4,14 @@ dataSources:
     driverClassName: com.mysql.cj.jdbc.Driver
     jdbcUrl: jdbc:mysql://localhost:3306/dms_user_db?useUnicode=true&characterEncoding=utf8
     username: root
-    password: admin
+    password: root
     # 在这里添加隔离级别配置
     transactionIsolation: TRANSACTION_READ_COMMITTED
 rules:
   - !SHARDING
     tables:
       check_in_log:
-        actualDataNodes: ds0.check_in_log_$->{202602..202612}
+        actualDataNodes: ds0.check_in_log_$->{202606..202612}
         tableStrategy:
           standard:
             shardingColumn: date
