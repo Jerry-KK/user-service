@@ -2,19 +2,22 @@ package cn.lethekk.userservice.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * @Author Lethekk
  * @Date 2026/6/10 1:34
  */
+@Component
 public class JsonUtils {
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    static {
-        OBJECT_MAPPER.registerModule(new JavaTimeModule());
-    }
+    private static ObjectMapper OBJECT_MAPPER;
 
-    private JsonUtils() {}
+    // 通过构造函数或 @Autowired 注入 Spring 容器中的全局 ObjectMapper
+    @Autowired
+    public JsonUtils(ObjectMapper objectMapper) {
+        JsonUtils.OBJECT_MAPPER = objectMapper;
+    }
 
     public static String toJson(Object obj) {
         try {
