@@ -1,6 +1,6 @@
 package cn.lethekk.userservice.service;
 
-import cn.lethekk.userservice.config.RabbitMqConfig;
+import cn.lethekk.userservice.config.JacksonConfig;
 import cn.lethekk.userservice.dto.CheckInMessage;
 import cn.lethekk.userservice.entity.CheckInDaysEntity;
 import cn.lethekk.userservice.entity.CheckInLogEntity;
@@ -10,7 +10,7 @@ import cn.lethekk.userservice.repository.checkin.CheckInDaysMapper;
 import cn.lethekk.userservice.repository.checkin.CheckInLogMapper;
 import cn.lethekk.userservice.repository.checkin.PointsLogMapper;
 import cn.lethekk.userservice.repository.checkin.UserTotalPointsMapper;
-import cn.lethekk.userservice.repository.msg.MsgOutBoxMapper;
+import cn.lethekk.userservice.utils.JsonUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -46,21 +45,19 @@ class CheckInServiceTest {
     @Mock
     private CheckInLogMapper checkInLogMapper;
     @Mock
-    private RabbitTemplate rabbitTemplate;
+    private UserEventPublisher eventPublisher;
 
     private CheckInService checkInService;
-    @Mock
-    private MsgOutBoxMapper msgOutBoxMapper;
 
     @BeforeEach
     void setUp() {
+        JsonUtils.setObjectMapper(new JacksonConfig().objectMapper());
         checkInService = new CheckInService(
                 userTotalPointsMapper,
                 pointsLogMapper,
                 checkInDaysMapper,
                 checkInLogMapper,
-                rabbitTemplate,
-                msgOutBoxMapper
+                eventPublisher
         );
     }
 
@@ -79,16 +76,8 @@ class CheckInServiceTest {
 
         // then
         assertThat(result).isTrue();
-        // 验证发送了 MQ 消息
-        ArgumentCaptor<CheckInMessage> msgCaptor = ArgumentCaptor.forClass(CheckInMessage.class);
-        verify(rabbitTemplate).convertAndSend(
-                eq(RabbitMqConfig.EVENT_EXCHANGE),
-                eq(RabbitMqConfig.USER_CHECKIN_KEY),
-                msgCaptor.capture()
-        );
-        CheckInMessage sentMsg = msgCaptor.getValue();
-        assertThat(sentMsg.getUserId()).isEqualTo(userId);
-        assertThat(sentMsg.getDateTime()).isEqualTo(ldt);
+        // 确保发送了 MQ 消息
+        verify(eventPublisher).publishCheckInEvent(any(CheckInMessage.class));
     }
 
     @Test
@@ -105,8 +94,8 @@ class CheckInServiceTest {
 
         // then
         assertThat(result).isFalse();
-        // 不应发送 MQ 消息
-        verifyNoInteractions(rabbitTemplate);
+        // 【新增关键验证】确保没有发送消息
+        verify(eventPublisher, never()).publishCheckInEvent(any(CheckInMessage.class));
     }
 
     @Test

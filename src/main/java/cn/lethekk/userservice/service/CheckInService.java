@@ -1,18 +1,14 @@
 package cn.lethekk.userservice.service;
 
-import cn.lethekk.userservice.config.RabbitMqConfig;
 import cn.lethekk.userservice.dto.CheckInMessage;
 import cn.lethekk.userservice.entity.*;
 import cn.lethekk.userservice.repository.checkin.CheckInDaysMapper;
 import cn.lethekk.userservice.repository.checkin.CheckInLogMapper;
 import cn.lethekk.userservice.repository.checkin.PointsLogMapper;
 import cn.lethekk.userservice.repository.checkin.UserTotalPointsMapper;
-import cn.lethekk.userservice.repository.msg.MsgOutBoxMapper;
-import cn.lethekk.userservice.utils.JsonUtils;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,8 +31,7 @@ public class CheckInService {
     private final PointsLogMapper pointsLogMapper;
     private final CheckInDaysMapper checkInDaysMapper;
     private final CheckInLogMapper checkInLogMapper;
-    private final RabbitTemplate rabbitTemplate;
-    private final MsgOutBoxMapper msgOutBoxMapper;
+    private final UserEventPublisher eventPublisher;
 
     @Transactional(rollbackFor = Exception.class)
     public boolean checkIn(Long userId, LocalDateTime ldt) {
@@ -54,16 +49,7 @@ public class CheckInService {
                     .userId(userId)
                     .dateTime(ldt)
                     .build();
-            String msgStr = JsonUtils.toJson(msg);
-            MsgOutBoxEntity msgOutBox = MsgOutBoxEntity.builder()
-                    .id(id)
-                    .label(RabbitMqConfig.USER_CHECKIN_KEY)
-                    .payload(msgStr)
-                    .state(0)
-                    .build();
-            msgOutBoxMapper.insert(msgOutBox);
-            /* rabbitTemplate.convertAndSend(RabbitMqConfig.EVENT_EXCHANGE, RabbitMqConfig.USER_CHECKIN_KEY, msg);
-            log.info("积分任务消息已发送: userId={}", userId); */
+            eventPublisher.publishCheckInEvent(msg);
         }
         return insert == 1;
     }

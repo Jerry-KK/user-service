@@ -19,6 +19,10 @@ public class JsonUtils {
         JsonUtils.OBJECT_MAPPER = objectMapper;
     }
 
+    public static void setObjectMapper(ObjectMapper objectMapper) {
+        OBJECT_MAPPER = objectMapper;
+    }
+
     public static String toJson(Object obj) {
         try {
             return OBJECT_MAPPER.writeValueAsString(obj);
