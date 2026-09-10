@@ -1,4 +1,4 @@
-package cn.lethekk.userservice.entity;
+package cn.lethekk.userservice.model.po;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 @Data
 @TableName("points_log")
-public class PointsLogEntity {
+public class PointsLogPO {
     @TableId("id")
     private Long id;
     private Long userId;

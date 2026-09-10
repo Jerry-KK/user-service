@@ -1,4 +1,4 @@
-package cn.lethekk.userservice.entity;
+package cn.lethekk.userservice.model.po;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 @TableName("user_total_points")
-public class UserTotalPointsEntity {
+public class UserTotalPointsPO {
     @TableId("user_id")
     private Long userId;
     private Integer totalPoints;

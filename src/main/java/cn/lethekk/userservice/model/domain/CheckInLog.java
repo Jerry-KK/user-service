@@ -1,23 +1,24 @@
-package cn.lethekk.userservice.dto;
+package cn.lethekk.userservice.model.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * 用户签到消息
+ * @Author Lethekk
+ * @Date 2026/4/24 14:05
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CheckInMessage implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class CheckInLog {
     private Long id;
     private Long userId;
-    private LocalDateTime dateTime;
+    private LocalDate date;
+    private LocalDateTime time;
 }

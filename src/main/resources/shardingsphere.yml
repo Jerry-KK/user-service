@@ -2,7 +2,7 @@ dataSources:
   ds0:
     dataSourceClassName: com.zaxxer.hikari.HikariDataSource
     driverClassName: com.mysql.cj.jdbc.Driver
-    jdbcUrl: jdbc:mysql://localhost:3306/dms_user_db?useUnicode=true&characterEncoding=utf8
+    jdbcUrl: jdbc:mysql://localhost:3306/dms_user_db?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
     username: root
     password: root
     # 在这里添加隔离级别配置

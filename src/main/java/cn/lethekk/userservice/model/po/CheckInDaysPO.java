@@ -1,4 +1,4 @@
-package cn.lethekk.userservice.entity;
+package cn.lethekk.userservice.model.po;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -10,16 +10,15 @@ import java.time.LocalDateTime;
 
 /**
  * @Author Lethekk
- * @Date 2026/4/24 14:05
+ * @Date 2026/4/24 21:32
  */
-@Builder
 @Data
-@TableName("check_in_log")
-public class CheckInLogEntity {
-    @TableId("id")
-    private Long id;
+@Builder
+@TableName("check_in_days")
+public class CheckInDaysPO {
+    @TableId("user_id")
     private Long userId;
-    private LocalDate date;
-    private LocalDateTime time;
-
+    private Integer days;
+    private LocalDate lastDate;
+    private LocalDateTime updateTime;
 }

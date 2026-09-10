@@ -1,18 +1,20 @@
-package cn.lethekk.userservice.entity;
+package cn.lethekk.userservice.model.po;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @Author Lethekk
  * @Date 2026/6/10 1:23
  */
-@Builder
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("msg_out_box")
-public class MsgOutBoxEntity {
+public class MsgOutBoxPO {
     @TableId("id")
     private Long id;
     private String label;

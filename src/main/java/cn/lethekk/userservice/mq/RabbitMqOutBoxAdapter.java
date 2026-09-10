@@ -1,14 +1,13 @@
-package cn.lethekk.userservice.adapter.outbound;
+package cn.lethekk.userservice.mq;
 
 import cn.lethekk.userservice.config.RabbitMqConfig;
-import cn.lethekk.userservice.dto.CheckInMessage;
-import cn.lethekk.userservice.entity.MsgOutBoxEntity;
-import cn.lethekk.userservice.repository.msg.MsgOutBoxMapper;
-import cn.lethekk.userservice.service.UserEventPublisher;
-import cn.lethekk.userservice.utils.JsonUtils;
+import cn.lethekk.userservice.model.event.MsgOutBoxEvent;
+import cn.lethekk.userservice.model.po.MsgOutBoxPO;
+import cn.lethekk.userservice.dao.msg.MsgOutBoxMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.BeanUtils;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Service;
@@ -25,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 @AllArgsConstructor
 @Service
 @Slf4j
-public class RabbitMqOutBoxAdapter implements UserEventPublisher, ApplicationRunner {
+public class RabbitMqOutBoxAdapter implements EventPublisher, ApplicationRunner {
 
     /**
      * todo
@@ -37,15 +36,9 @@ public class RabbitMqOutBoxAdapter implements UserEventPublisher, ApplicationRun
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
     @Override
-    public void publishCheckInEvent(CheckInMessage message) {
-        String msgStr = JsonUtils.toJson(message);
-        MsgOutBoxEntity msgOutBox = MsgOutBoxEntity.builder()
-                .id(message.getId())
-                .label(RabbitMqConfig.USER_CHECKIN_KEY)
-                .payload(msgStr)
-                .state(0)
-                .build();
-        msgOutBoxMapper.insert(msgOutBox);
+    public void send(MsgOutBoxEvent event) {
+        MsgOutBoxPO po = convert(event);
+        msgOutBoxMapper.insert(po);
     }
 
     @Override
@@ -54,21 +47,27 @@ public class RabbitMqOutBoxAdapter implements UserEventPublisher, ApplicationRun
     }
 
     private void sendMsgFromBox() {
-        List<MsgOutBoxEntity> msgList = msgOutBoxMapper.selectListByState(0);
+        List<MsgOutBoxPO> msgList = msgOutBoxMapper.selectListByState(0);
         if (msgList.isEmpty()) {
             return;
         }
-        for (MsgOutBoxEntity msgEntity : msgList) {
+        for (MsgOutBoxPO msgPO : msgList) {
             try {
-                rabbitTemplate.convertAndSend(RabbitMqConfig.EVENT_EXCHANGE, msgEntity.getLabel(), msgEntity.getPayload());
-                log.info("[发件箱]发送成功: msgId={}", msgEntity.getId());
-                msgEntity.setState(1);
+                rabbitTemplate.convertAndSend(RabbitMqConfig.EVENT_EXCHANGE, msgPO.getLabel(), msgPO.getPayload());
+                log.info("[发件箱]发送成功: msgId={}", msgPO.getId());
+                msgPO.setState(1);
             } catch (Exception e) {
-                log.info("[发件箱]发送失败: msgId={}", msgEntity.getId());
-                msgEntity.setState(2);
+                log.info("[发件箱]发送失败: msgId={}", msgPO.getId());
+                msgPO.setState(2);
             } finally {
-                msgOutBoxMapper.updateById(msgEntity);
+                msgOutBoxMapper.updateById(msgPO);
             }
         }
+    }
+
+    private MsgOutBoxPO convert(MsgOutBoxEvent event) {
+        MsgOutBoxPO po = new MsgOutBoxPO();
+        BeanUtils.copyProperties(event, po);
+        return po;
     }
 }

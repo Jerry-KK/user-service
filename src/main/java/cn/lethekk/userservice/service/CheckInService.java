@@ -1,11 +1,16 @@
 package cn.lethekk.userservice.service;
 
-import cn.lethekk.userservice.dto.CheckInMessage;
-import cn.lethekk.userservice.entity.*;
-import cn.lethekk.userservice.repository.checkin.CheckInDaysMapper;
-import cn.lethekk.userservice.repository.checkin.CheckInLogMapper;
-import cn.lethekk.userservice.repository.checkin.PointsLogMapper;
-import cn.lethekk.userservice.repository.checkin.UserTotalPointsMapper;
+import cn.lethekk.userservice.adapter.outbound.message.UserEventPublisher;
+import cn.lethekk.userservice.adapter.outbound.repository.CheckInLogRepository;
+import cn.lethekk.userservice.model.domain.CheckInLog;
+import cn.lethekk.userservice.model.po.CheckInDaysPO;
+import cn.lethekk.userservice.model.po.CheckInLogPO;
+import cn.lethekk.userservice.model.po.PointsLogPO;
+import cn.lethekk.userservice.model.po.UserTotalPointsPO;
+import cn.lethekk.userservice.dao.checkin.CheckInDaysMapper;
+import cn.lethekk.userservice.dao.checkin.CheckInLogMapper;
+import cn.lethekk.userservice.dao.checkin.PointsLogMapper;
+import cn.lethekk.userservice.dao.checkin.UserTotalPointsMapper;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,39 +37,35 @@ public class CheckInService {
     private final CheckInDaysMapper checkInDaysMapper;
     private final CheckInLogMapper checkInLogMapper;
     private final UserEventPublisher eventPublisher;
+    private final CheckInLogRepository checkInLogRepository;
 
     @Transactional(rollbackFor = Exception.class)
     public boolean checkIn(Long userId, LocalDateTime ldt) {
         long id = IdWorker.getId();
-        CheckInLogEntity e = CheckInLogEntity.builder()
+        CheckInLog checkIn = CheckInLog.builder()
                 .id(id)
                 .userId(userId)
                 .date(ldt.toLocalDate())
                 .time(ldt)
                 .build();
-        int insert = checkInLogMapper.insertIgnore(e);
-        if (insert == 1) {
-            CheckInMessage msg = CheckInMessage.builder()
-                    .id(id)
-                    .userId(userId)
-                    .dateTime(ldt)
-                    .build();
-            eventPublisher.publishCheckInEvent(msg);
+        boolean saveRes = checkInLogRepository.save(checkIn);
+        if (saveRes) {
+            eventPublisher.publishCheckInEvent(checkIn);
         }
-        return insert == 1;
+        return saveRes;
     }
 
     public boolean isCheckIn(Long userId, LocalDate date) {
-        CheckInLogEntity e = checkInLogMapper.selectLog(userId, date);
+        CheckInLogPO e = checkInLogMapper.selectLog(userId, date);
         return e != null && e.getId() != null;
     }
 
-    public List<CheckInLogEntity> queryRange(Long userId, LocalDate start, LocalDate end) {
+    public List<CheckInLogPO> queryRange(Long userId, LocalDate start, LocalDate end) {
         return checkInLogMapper.selectMonthLog(userId, start, end);
     }
 
     public int queryPoints(Long userId) {
-        UserTotalPointsEntity e = userTotalPointsMapper.selectById(userId);
+        UserTotalPointsPO e = userTotalPointsMapper.selectById(userId);
         if (e == null || e.getTotalPoints() == null) {
             return 0;
         }
@@ -73,10 +74,10 @@ public class CheckInService {
 
     public void addPoints(Long userId, LocalDateTime ldt) {
         //处理连续天数
-        CheckInDaysEntity checkInDays = checkInDaysMapper.selectById(userId);
+        CheckInDaysPO checkInDays = checkInDaysMapper.selectById(userId);
         boolean condition_7_days = false;
         if (checkInDays == null || checkInDays.getUserId() == null) {
-            checkInDays = CheckInDaysEntity.builder()
+            checkInDays = CheckInDaysPO.builder()
                     .userId(userId)
                     .days(1)
                     .lastDate(ldt.toLocalDate())
@@ -98,13 +99,13 @@ public class CheckInService {
         }
         //添加积分
         int addPoints = condition_7_days ? 101 : 1;
-        UserTotalPointsEntity userTotalPoints = UserTotalPointsEntity.builder().userId(userId).totalPoints(addPoints).updateTime(ldt).build();
+        UserTotalPointsPO userTotalPoints = UserTotalPointsPO.builder().userId(userId).totalPoints(addPoints).updateTime(ldt).build();
         userTotalPointsMapper.insertOrUpdatePoint(userTotalPoints);
         //记录积分记录
-        List<PointsLogEntity> list = new ArrayList<>();
-        list.add(PointsLogEntity.builder().id(IdWorker.getId()).userId(userId).type(0).points(1).time(ldt).build());
+        List<PointsLogPO> list = new ArrayList<>();
+        list.add(PointsLogPO.builder().id(IdWorker.getId()).userId(userId).type(0).points(1).time(ldt).build());
         if (condition_7_days) {
-            list.add(PointsLogEntity.builder().id(IdWorker.getId()).userId(userId).type(1).points(100).time(ldt).build());
+            list.add(PointsLogPO.builder().id(IdWorker.getId()).userId(userId).type(1).points(100).time(ldt).build());
         }
         pointsLogMapper.insert(list);
         log.info("积分已累加: userId={}, 增加{}分", userId, addPoints);

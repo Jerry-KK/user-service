@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="cn.lethekk.userservice.repository.checkin.CheckInLogMapper">
+<mapper namespace="cn.lethekk.userservice.dao.checkin.CheckInLogMapper">
 
     <select id="selectLog">
         select `id`, `user_id`, `date`, `time`

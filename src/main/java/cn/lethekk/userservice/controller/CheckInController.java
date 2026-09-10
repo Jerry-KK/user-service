@@ -1,6 +1,6 @@
 package cn.lethekk.userservice.controller;
 
-import cn.lethekk.userservice.entity.CheckInLogEntity;
+import cn.lethekk.userservice.model.po.CheckInLogPO;
 import cn.lethekk.userservice.service.CheckInService;
 import cn.lethekk.userservice.utils.TimestampConverterUtil;
 import lombok.AllArgsConstructor;
@@ -45,7 +45,7 @@ public class CheckInController {
 
     //查询一段时间签到记录
     @GetMapping("/queryRange")
-    public List<CheckInLogEntity> queryRange(Long userId, Long startTime, Long endTime) {
+    public List<CheckInLogPO> queryRange(Long userId, Long startTime, Long endTime) {
         //todo 限制查询范围，跨度不能太大
         LocalDate start = TimestampConverterUtil.fromMillis(startTime).toLocalDate();
         LocalDate end = TimestampConverterUtil.fromMillis(endTime).toLocalDate();

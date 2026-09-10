@@ -1,4 +1,4 @@
-package cn.lethekk.userservice.entity;
+package cn.lethekk.userservice.model.po;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -12,7 +12,7 @@ import lombok.Data;
 @AllArgsConstructor
 @Data
 @TableName("msg_deduplicate")
-public class MsgDeduplicationEntity {
+public class MsgDeduplicationPO {
     @TableId("id")
     private Long id;
 

@@ -1,7 +1,7 @@
 package cn.lethekk.userservice.service;
 
-import cn.lethekk.userservice.dto.CheckInMessage;
-import cn.lethekk.userservice.repository.msg.MsgDeduplicationMapper;
+import cn.lethekk.userservice.model.domain.CheckInLog;
+import cn.lethekk.userservice.dao.msg.MsgDeduplicationMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,15 +21,15 @@ public class MsgDeduplicationService {
     private final MsgDeduplicationMapper msgDeduplicationMapper;
 
     @Transactional
-    public void consumeWithNoRepeated(CheckInMessage message) {
+    public void consumeWithNoRepeated(CheckInLog checkInLog) {
         //1 尝试插入去幂等表
-        int rowNum = msgDeduplicationMapper.insertIgnore(message.getId());
+        int rowNum = msgDeduplicationMapper.insertIgnore(checkInLog.getId());
         if (rowNum == 0) {
             //重复消息
             return;
         }
         //2 执行业务
-        checkInService.addPoints(message.getUserId(), message.getDateTime());
+        checkInService.addPoints(checkInLog.getUserId(), checkInLog.getTime());
     }
 
 }
